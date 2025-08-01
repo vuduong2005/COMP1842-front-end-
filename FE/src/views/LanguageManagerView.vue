@@ -1,9 +1,13 @@
 <template>
   <div class="ui container" style="max-width: 800px; margin: 2rem auto;">
     <h2 class="ui header">Language Manager</h2>
+
+    <!-- Success Message -->
     <div v-if="successMessage" class="ui positive message">
-  {{ successMessage }}
-</div>
+      {{ successMessage }}
+    </div>
+
+    <!-- Add Language Form -->
     <div class="ui form">
       <div class="field">
         <label>Name</label>
@@ -13,29 +17,34 @@
         <label>Code</label>
         <input v-model="newLanguage.code" type="text" placeholder="Enter language code" />
       </div>
+      <div class="field">
+        <label>Description</label>
+        <input v-model="newLanguage.description" type="text" placeholder="Enter language description" />
+      </div>
       <button class="ui primary button" @click="addLanguage">Add Language</button>
     </div>
 
+    <!-- Language Table -->
     <div style="overflow-x: auto;" v-if="languages.length">
       <table class="ui celled table">
         <thead>
           <tr>
             <th>Name</th>
             <th>Code</th>
+            <th>Description</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(lang, index) in languages" :key="lang._id">
             <td v-if="editIndex !== index">{{ lang.name }}</td>
-            <td v-else>
-              <input v-model="editLanguage.name" />
-            </td>
+            <td v-else><input v-model="editLanguage.name" /></td>
 
             <td v-if="editIndex !== index">{{ lang.code }}</td>
-            <td v-else>
-              <input v-model="editLanguage.code" />
-            </td>
+            <td v-else><input v-model="editLanguage.code" /></td>
+
+            <td v-if="editIndex !== index">{{ lang.description }}</td>
+            <td v-else><input v-model="editLanguage.description" /></td>
 
             <td>
               <template v-if="editIndex === index">
@@ -54,22 +63,21 @@
 
     <div v-else class="ui message">No languages added yet.</div>
   </div>
-</template> 
+</template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
 const languages = ref([])
-const newLanguage = ref({ name: '', code: '' })
+const newLanguage = ref({ name: '', code: '', description: '' })
 const editIndex = ref(null)
-const editLanguage = ref({ name: '', code: '' })
-const successMessage = ref('')  // 🟢 NEW: to hold temporary success messages
+const editLanguage = ref({ name: '', code: '', description: '' })
+const successMessage = ref('')
 
-// Display success banner
 function showMessage(msg) {
   successMessage.value = msg
-  setTimeout(() => successMessage.value = '', 3000)  // auto-hide after 3s
+  setTimeout(() => successMessage.value = '', 3000)
 }
 
 const fetchLanguages = async () => {
@@ -85,7 +93,7 @@ const addLanguage = async () => {
   try {
     const res = await axios.post('http://localhost:3000/languages', newLanguage.value)
     languages.value.push(res.data)
-    newLanguage.value = { name: '', code: '' }
+    newLanguage.value = { name: '', code: '', description: '' }
     showMessage('✅ Language added successfully!')
   } catch (err) {
     console.error('❌ Failed to add language:', err)
@@ -99,7 +107,7 @@ function startEdit(index, lang) {
 
 function cancelEdit() {
   editIndex.value = null
-  editLanguage.value = { name: '', code: '' }
+  editLanguage.value = { name: '', code: '', description: '' }
 }
 
 async function updateLanguage(id) {
